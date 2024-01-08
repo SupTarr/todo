@@ -14,6 +14,10 @@ type User struct {
 	Name string
 }
 
+type UserHandler struct {
+	db *gorm.DB
+}
+
 func main() {
 	db, err := gorm.Open(sqlite.Open("todos.db"), &gorm.Config{})
 	if err != nil {
@@ -25,10 +29,19 @@ func main() {
 	db.Create(&User{Name: "Supakrit"})
 
 	r := gin.Default()
-	r.GET("/ping", pingPongHandler)
+	r.GET("/ping", PingPongHandler)
+
+	userHandler := UserHandler{db: db}
+	r.GET("/users", userHandler.GetUser)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func pingPongHandler(c *gin.Context) {
+func PingPongHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+func (h *UserHandler) GetUser(c *gin.Context) {
+	var u User
+	h.db.First(&u)
+	c.JSON(200, u)
 }
