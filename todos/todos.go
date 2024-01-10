@@ -2,7 +2,9 @@ package todos
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/SupTarr/todo/auth"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,14 @@ func NewTodoHandler(db *gorm.DB) *TodoHandler {
 }
 
 func (t *TodoHandler) NewTask(c *gin.Context) {
+	s := c.Request.Header.Get("Authorization")
+	tokenString := strings.TrimPrefix(s, "Bearer ")
+
+	if err := auth.Protect(tokenString); err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
 	var todo Todo
 	if err := c.ShouldBindJSON(&todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
