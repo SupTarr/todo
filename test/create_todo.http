@@ -1,7 +1,13 @@
-POST http://localhost:8081/todos
+@base_url = http://localhost:8081
+# @name auth
+GET {{base_url}}/token
+###
+@token = {{auth.response.body.$.token}}
+###
+POST {{base_url}}//todos
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5MDExNjl9.w16pt0iksd2KQco2J2fKwhHEMXt2PrQh4rJIMwer72g
+Authorization: Bearer {{token}}
 
 {
-    "text": "Test Todo"
-}
+    "text": "Test Todo 2"
+} 
