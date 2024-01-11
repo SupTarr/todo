@@ -18,6 +18,11 @@ import (
 	"github.com/SupTarr/todo/todos"
 )
 
+var (
+	buildcommit = "dev"
+	buildtime   = time.Now().String()
+)
+
 func main() {
 	err := godotenv.Load("local.env")
 	if err != nil {
@@ -33,6 +38,7 @@ func main() {
 
 	r := gin.Default()
 	r.GET("/ping", PingPongHandler)
+	r.GET("/x", XHandler)
 
 	r.GET("/token", auth.AccessToken(os.Getenv("SIGN")))
 
@@ -72,4 +78,8 @@ func main() {
 
 func PingPongHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+}
+
+func XHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"buildcommit": buildcommit, "buildtime": buildtime})
 }
