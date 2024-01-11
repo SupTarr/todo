@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -30,13 +34,40 @@ func main() {
 	r := gin.Default()
 	r.GET("/ping", PingPongHandler)
 
-	r.GET("/token", auth.AccessToken("==signature=="))
+	r.GET("/token", auth.AccessToken(os.Getenv("SIGN")))
 
-	protected := r.Group("", auth.Protect([]byte("==signature==")))
+	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
 	todoHandler := todos.NewTodoHandler(db)
 	protected.POST("/todos", todoHandler.NewTask)
 
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), r))
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	srv := &http.Server{
+		Addr:              ":" + os.Getenv("PORT"),
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	<-ctx.Done()
+
+	stop()
+	log.Println("Shutting down gracefully, press Ctrl+C again to force")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal("Server forced to shutdown: ", err)
+	}
+
+	log.Println("Server exiting")
 }
 
 func PingPongHandler(c *gin.Context) {
