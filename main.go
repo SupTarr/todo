@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -14,6 +15,11 @@ import (
 )
 
 func main() {
+	err := godotenv.Load("local.env")
+	if err != nil {
+		log.Printf(">> Please consider environment variables: %s\n", err)
+	}
+
 	db, err := gorm.Open(sqlite.Open("todos.sqlite"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
