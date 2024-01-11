@@ -24,10 +24,12 @@ func main() {
 	r := gin.Default()
 	r.GET("/ping", PingPongHandler)
 
-	r.GET("/token", auth.AccessToken)
+	r.GET("/token", auth.AccessToken("==signature=="))
 
+	protected := r.Group("", auth.Protect([]byte("==signature==")))
 	todoHandler := todos.NewTodoHandler(db)
-	r.POST("/todos", todoHandler.NewTask)
+	protected.POST("/todos", todoHandler.NewTask)
+
 	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), r))
 }
 
