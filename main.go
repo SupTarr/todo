@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"golang.org/x/time"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
@@ -24,7 +25,13 @@ var (
 )
 
 func main() {
-	err := godotenv.Load("local.env")
+	_, err := os.Create("/tmp/live")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove("/tmp/live")
+
+	err = godotenv.Load("local.env")
 	if err != nil {
 		log.Printf(">> Please consider environment variables: %s\n", err)
 	}
@@ -37,6 +44,9 @@ func main() {
 	db.AutoMigrate(&todos.Todo{})
 
 	r := gin.Default()
+	r.GET("/health", func(c *gin.Context) {
+		c.Status(200)
+	})
 	r.GET("/ping", PingPongHandler)
 	r.GET("/x", XHandler)
 
@@ -82,4 +92,8 @@ func PingPongHandler(c *gin.Context) {
 
 func XHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"buildcommit": buildcommit, "buildtime": buildtime})
+}
+
+func limitedHandler(c *gin.Context) {
+	limiter := rate.NewLimiter(5, 5)
 }
