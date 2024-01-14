@@ -40,7 +40,6 @@ const (
     bitNoQuoteTextMarshaler
     bitNoNullSliceOrMap
     bitValidateString
-    bitNoValidateJSONMarshaler
 
     // used for recursive compile
     bitPointerValue = 63
@@ -72,10 +71,6 @@ const (
     // ValidateString indicates that encoder should validate the input string
     // before encoding it into JSON.
     ValidateString       Options = 1 << bitValidateString
-
-    // NoValidateJSONMarshaler indicates that the encoder should not validate the output string
-    // after encoding the JSONMarshaler to JSON.
-    NoValidateJSONMarshaler Options = 1 << bitNoValidateJSONMarshaler
   
     // CompatibleWithStd is used to be compatible with std encoder.
     CompatibleWithStd Options = SortMapKeys | EscapeHTML | CompactMarshaler
@@ -117,15 +112,6 @@ func (self *Encoder) SetValidateString(f bool) {
         self.Opts |= ValidateString
     } else {
         self.Opts &= ^ValidateString
-    }
-}
-
-// SetNoValidateJSONMarshaler specifies if option NoValidateJSONMarshaler opens
-func (self *Encoder) SetNoValidateJSONMarshaler(f bool) {
-    if f {
-        self.Opts |= NoValidateJSONMarshaler
-    } else {
-        self.Opts &= ^NoValidateJSONMarshaler
     }
 }
 
