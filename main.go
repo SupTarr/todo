@@ -24,6 +24,8 @@ var (
 	buildtime   = time.Now().String()
 )
 
+var limiter = rate.NewLimiter(5, 5)
+
 func main() {
 	_, err := os.Create("/tmp/live")
 	if err != nil {
@@ -44,13 +46,14 @@ func main() {
 	db.AutoMigrate(&todos.Todo{})
 
 	r := gin.Default()
-	r.GET("/health", func(c *gin.Context) {
+	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
 	})
-	r.GET("/ping", PingPongHandler)
+	r.GET("/pingz", PingPongHandler)
+	r.GET("/limitz", LimitedHandler)
 	r.GET("/x", XHandler)
 
-	r.GET("/token", auth.AccessToken(os.Getenv("SIGN")))
+	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGN")))
 
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
 	todoHandler := todos.NewTodoHandler(db)
@@ -94,6 +97,13 @@ func XHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"buildcommit": buildcommit, "buildtime": buildtime})
 }
 
-func limitedHandler(c *gin.Context) {
-	limiter := rate.NewLimiter(5, 5)
+func LimitedHandler(c *gin.Context) {
+	if !limiter.Allow() {
+		c.AbortWithStatus(http.StatusTooManyRequests)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
 }
