@@ -38,7 +38,7 @@ func main() {
 		log.Printf(">> Please consider environment variables: %s\n", err)
 	}
 
-	db, err := gorm.Open(sqlite.Open("todos.sqlite"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("DB_CONN"), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
 	}
@@ -58,6 +58,7 @@ func main() {
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
 	todoHandler := todos.NewTodoHandler(db)
 	protected.POST("/todos", todoHandler.NewTask)
+	protected.GET("/todos", todoHandler.GetTasks)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
