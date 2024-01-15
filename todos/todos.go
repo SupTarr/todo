@@ -24,6 +24,20 @@ func NewTodoHandler(db *gorm.DB) *TodoHandler {
 	return &TodoHandler{db: db}
 }
 
+func (t *TodoHandler) GetTasks(c *gin.Context) {
+	var todo []Todo
+
+	r := t.db.Find(&todo)
+	if err := r.Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, todo)
+}
+
 func (t *TodoHandler) NewTask(c *gin.Context) {
 	var todo Todo
 	if err := c.ShouldBindJSON(&todo); err != nil {
