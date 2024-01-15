@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"golang.org/x/time/rate"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"github.com/SupTarr/todo/auth"
@@ -38,7 +38,7 @@ func main() {
 		log.Printf(">> Please consider environment variables: %s\n", err)
 	}
 
-	db, err := gorm.Open(sqlite.Open("DB_CONN"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(os.Getenv("DB_CONN")), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
 	}
