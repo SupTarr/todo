@@ -7,11 +7,12 @@ build:
 run:
 	./todo
 
-postgres:
-	docker run --name todos -e POSTGRES_PASSWORD=2009 -e POSTGRES_USER=postgres -e POSTGRES_DB=todos -d -p 5432:5432 postgres
+maria:
+	docker run -p 127.0.0.1:3306:3306 --name some-mariadb \
+	-e MARIADB_ROOT_PASSWORD=my-secret-pw -e MARIADB_DATABASE=myapp -d mariadb:latest
 
 reload:
-	echo "GET http://:8081/limitz" | vegeta attack -rate=10/s -duration=1s | vegeta report
+	echo "GET http://127.0.0.1:8081/limitz" | vegeta attack -rate=10/s -duration=1s | vegeta report
 
 image:
 	docker build -t todo:test -f Dockerfile .
