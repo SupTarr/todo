@@ -1,6 +1,7 @@
 package todos
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -50,9 +51,11 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 
 	if todo.Title == "sleep" {
 		transactionID := c.Request.Header.Get("TransactionID")
-		log.Println(transactionID, "not allowed")
+		aud, _ := c.Get("aud")
+		text := fmt.Sprintf("transction %s:, audience: %v not allowed", transactionID, aud)
+		log.Println(text)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "not allowed",
+			"error": text,
 		})
 		return
 	}
