@@ -1,7 +1,7 @@
 build:
 	go build \
-		-ldflags "-X ,sim.buildcommit=`git rev-parse --short HEAD` \
-		-X main.buildtime=`date "+%Y-%m-%dT%H:%S%Z:00"`" \
+		-ldflags "-X main.buildcommit=`git rev-parse --short HEAD` \
+		-X main.buildtime=`date "+%Y-%m-%dT%H:%M:%S%Z:00"`" \
 		-o todo
 
 run:
@@ -18,5 +18,5 @@ image:
 	docker build -t todo:test -f Dockerfile .
 
 container:
-	docker run -p:8081:8081 --env-file ./local.env --link todos:db \
-	--name my-todo-app todo:test
+	docker run -p:8081:8081 --env-file ./local.env \
+	--link some-mariadb:db --name runningtodo todo:test
