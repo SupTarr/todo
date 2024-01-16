@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  db:
+  todo-db:
     image: mariadb
     ports:
       - 3306:3306
@@ -8,13 +8,17 @@ services:
       - MARIADB_ROOT_PASSWORD=P!ssw0rd
       - MARIADB_DATABASE=todos
 
-  api:
+  todo-api:
     image: suptarr/todo-api:1.0
-    build: .
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    depends_on:
+      - todo-db
     ports:
       - 8081:8081
     environment:
       - PORT=8081
       - SIGN=VnP1vUHdpqtzXJLafBMzGg
-      - DB_CONN=root:P!ssw0rd@tcp(db:3306)/todos?charset=utf8mb4&parseTime=True&loc=Local
+      - DB_CONN=root:P!ssw0rd@tcp(todo-db:3306)/todos?charset=utf8mb4&parseTime=True&loc=Local
     restart: always

@@ -1,6 +1,6 @@
-FROM cgr.dev/chainguard/go:latest AS build
+FROM golang:alpine AS builder
 
-WORKDIR /app
+WORKDIR /go/src
 
 COPY go.mod go.sum ./
 
@@ -13,9 +13,9 @@ COPY . .
 RUN go build \
     -ldflags "-X main.buildcommit=`git rev-parse --short HEAD` \
 		-X main.buildtime=`date "+%Y-%m-%dT%H:%M:%S%Z:00"`" \
-    -o api
+    -o app
 
-FROM cgr.dev/chainguard/static:latest
+FROM alpine:latest
 
 # USER nonroot
 
@@ -23,10 +23,8 @@ FROM cgr.dev/chainguard/static:latest
 # ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-static ./tini
 # # RUN chmod +x ./tini
 
-COPY --from=build /app/api .
+COPY --from=builder /go/src/app .
 
 EXPOSE 8081
 
-USER nonroot:nonroot
-
-CMD ["/api"]ß 
+CMD ["/app"]
