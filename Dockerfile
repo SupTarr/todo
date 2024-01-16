@@ -11,7 +11,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 COPY . .
 
 RUN go build \
-    -ldflags "-linkmode external -extldflags -static" \
+    -ldflags "-X main.buildcommit=`git rev-parse --short HEAD` \
+		-X main.buildtime=`date "+%Y-%m-%dT%H:%M:%S%Z:00"`" \
     -o api
 
 FROM cgr.dev/chainguard/static:latest

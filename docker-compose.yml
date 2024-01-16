@@ -12,7 +12,7 @@ services:
     image: suptarr/todo-api:1.0
     build: .
     ports:
-      - 3000:3000
+      - 8081:8081
     environment:
       - PORT=8081
       - SIGN=VnP1vUHdpqtzXJLafBMzGg
