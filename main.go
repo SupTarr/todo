@@ -55,7 +55,7 @@ func main() {
 	config.AllowHeaders = []string{
 		"Origin",
 		"Authorization",
-		"TransctionID",
+		"TransactionID",
 	}
 	r.Use(cors.New(config))
 
@@ -72,6 +72,7 @@ func main() {
 	todoHandler := todos.NewTodoHandler(db)
 	protected.POST("/todos", todoHandler.NewTask)
 	protected.GET("/todos", todoHandler.GetTasks)
+	protected.DELETE("/todos/:id", todoHandler.RemoveTask)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
