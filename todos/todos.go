@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -27,9 +28,9 @@ func NewTodoHandler(db *gorm.DB) *TodoHandler {
 }
 
 func (t *TodoHandler) GetTasks(c *gin.Context) {
-	var todo []Todo
+	var todos []Todo
 
-	r := t.db.Find(&todo)
+	r := t.db.Find(&todos)
 	if err := r.Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -37,7 +38,7 @@ func (t *TodoHandler) GetTasks(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, todo)
+	c.JSON(http.StatusOK, todos)
 }
 
 func (t *TodoHandler) NewTask(c *gin.Context) {
@@ -71,4 +72,25 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"ID": todo.Model.ID,
 	})
+}
+
+func (t *TodoHandler) RemoveTask(c *gin.Context) {
+	idParam := c.Param("id")
+	id, err := strconv.Atoi(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	r := t.db.Delete(&Todo{}, id)
+	if err := r.Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
