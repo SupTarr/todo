@@ -1,6 +1,9 @@
 package todos
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 type TestDB struct{}
 
@@ -53,7 +56,7 @@ func TestCreateTodoNotAllowSleepTask(t *testing.T) {
 
 	handler.NewTask(c)
 
-	want := "not allowed"
+	want := fmt.Sprintf("transction %s:, audience: %v not allowed", c.TransactionID(), c.Audience())
 
 	if want != c.v["error"] {
 		t.Errorf("want %s but get %s\n", want, c.v["error"])
