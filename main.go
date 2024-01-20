@@ -59,6 +59,8 @@ func main() {
 	}
 	r.Use(cors.New(config))
 
+	gormStore := todos.NewGormStore(db)
+
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
 	})
@@ -69,7 +71,7 @@ func main() {
 	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGN")))
 
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
-	todoHandler := todos.NewTodoHandler(db)
+	todoHandler := todos.NewTodoHandler(gormStore)
 	protected.POST("/todos", todoHandler.NewTask)
 	protected.GET("/todos", todoHandler.GetTasks)
 	protected.DELETE("/todos/:id", todoHandler.RemoveTask)
