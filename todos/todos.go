@@ -19,21 +19,27 @@ func (Todo) TableName() string {
 	return "todos"
 }
 
-type TodoHandler struct {
-	db *gorm.DB
+type storer interface {
+	GetTodos(*[]Todo) error
+	NewTodo(*Todo) error
+	DeleteTodo(*Todo, int) error
 }
 
-func NewTodoHandler(db *gorm.DB) *TodoHandler {
-	return &TodoHandler{db: db}
+type TodoHandler struct {
+	store storer
+}
+
+func NewTodoHandler(store storer) *TodoHandler {
+	return &TodoHandler{store: store}
 }
 
 func (t *TodoHandler) GetTasks(c *gin.Context) {
 	var todos []Todo
 
-	r := t.db.Find(&todos)
-	if err := r.Error; err != nil {
+	err := t.store.GetTodos(&todos)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": err,
 		})
 		return
 	}
@@ -61,10 +67,10 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 		return
 	}
 
-	r := t.db.Create(&todo)
-	if err := r.Error; err != nil {
+	err := t.store.NewTodo(&todo)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
+			"error": err,
 		})
 		return
 	}
@@ -84,10 +90,10 @@ func (t *TodoHandler) RemoveTask(c *gin.Context) {
 		return
 	}
 
-	r := t.db.Delete(&Todo{}, id)
-	if err := r.Error; err != nil {
+	err = t.store.DeleteTodo(&Todo{}, id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
+			"error": err,
 		})
 		return
 	}
