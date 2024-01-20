@@ -33,7 +33,16 @@ func NewTodoHandler(store storer) *TodoHandler {
 	return &TodoHandler{store: store}
 }
 
-func (t *TodoHandler) GetTasks(c *gin.Context) {
+type Context interface {
+	Bind(interface{}) error
+	TodoID() string
+	TransactionID() string
+	Audience() string
+	Status(int)
+	JSON(int, interface{})
+}
+
+func (t *TodoHandler) GetTasks(c Context) {
 	var todos []Todo
 
 	err := t.store.GetTodos(&todos)
@@ -47,9 +56,9 @@ func (t *TodoHandler) GetTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, todos)
 }
 
-func (t *TodoHandler) NewTask(c *gin.Context) {
+func (t *TodoHandler) NewTask(c Context) {
 	var todo Todo
-	if err := c.ShouldBindJSON(&todo); err != nil {
+	if err := c.Bind(&todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -57,8 +66,8 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 	}
 
 	if todo.Title == "sleep" {
-		transactionID := c.Request.Header.Get("TransactionID")
-		aud, _ := c.Get("aud")
+		transactionID := c.TransactionID()
+		aud := c.Audience()
 		text := fmt.Sprintf("transction %s:, audience: %v not allowed", transactionID, aud)
 		log.Println(text)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -80,8 +89,8 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 	})
 }
 
-func (t *TodoHandler) RemoveTask(c *gin.Context) {
-	idParam := c.Param("id")
+func (t *TodoHandler) RemoveTask(c Context) {
+	idParam := c.TodoID()
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
