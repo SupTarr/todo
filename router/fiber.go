@@ -2,50 +2,57 @@ package router
 
 import (
 	"github.com/SupTarr/todo/todos"
-	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 type FiberRouter struct {
 	*fiber.App
 }
 
-func NewGinContext(c *gin.Context) *MyContext {
-	return &MyContext{Context: c}
+func NewFiberRouter() *FiberRouter {
+	r := fiber.New()
+	r.Use(cors.New())
+	r.Use(logger.New())
+	return &FiberRouter{r}
 }
 
-func (c MyContext) Bind(i interface{}) error {
-	return c.ShouldBindJSON(i)
+func (r *FiberRouter) POST(path string, handler func(todos.Context)) {
+	r.App.Post(path, func(c *fiber.Ctx) error {
+		handler(NewFiberCtx(c))
+		return nil
+	})
 }
 
-func (c MyContext) TodoID() string {
-	return c.Param("id")
+type FiberCtx struct {
+	*fiber.Ctx
 }
 
-func (c MyContext) TransactionID() string {
-	return c.Request.Header.Get("TransactionID")
+func NewFiberCtx(c *fiber.Ctx) *FiberCtx {
+	return &FiberCtx{Ctx: c}
 }
 
-func (c MyContext) Audience() string {
-	if aud, ok := c.Get("aud"); ok {
-		if s, ok := aud.(string); ok {
-			return s
-		}
-	}
-
-	return ""
+func (c FiberCtx) Bind(i interface{}) error {
+	return c.Ctx.BodyParser(i)
 }
 
-func (c MyContext) Status(code int) {
-	c.Context.Status(code)
+func (c FiberCtx) TodoID() string {
+	return c.Ctx.Params("id")
 }
 
-func (c MyContext) JSON(code int, i interface{}) {
-	c.Context.JSON(code, i)
+func (c FiberCtx) TransactionID() string {
+	return string(c.Ctx.Request().Header.Peek("TransactionID"))
 }
 
-func NewGinHandler(handler func(todos.Context)) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		handler(&MyContext{Context: c})
-	}
+func (c FiberCtx) Audience() string {
+	return c.Ctx.Get("aud")
+}
+
+func (c FiberCtx) Status(code int) {
+	c.Ctx.Status(code)
+}
+
+func (c FiberCtx) JSON(code int, i interface{}) {
+	c.Ctx.Status(code).JSON(i)
 }
