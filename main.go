@@ -17,6 +17,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/SupTarr/todo/auth"
+	"github.com/SupTarr/todo/router"
+	"github.com/SupTarr/todo/store"
 	"github.com/SupTarr/todo/todos"
 )
 
@@ -59,7 +61,7 @@ func main() {
 	}
 	r.Use(cors.New(config))
 
-	gormStore := todos.NewGormStore(db)
+	gormStore := store.NewGormStore(db)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
@@ -72,9 +74,9 @@ func main() {
 
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
 	todoHandler := todos.NewTodoHandler(gormStore)
-	protected.POST("/todos", todos.NewGinHandler(todoHandler.NewTask))
-	protected.GET("/todos", todos.NewGinHandler(todoHandler.GetTasks))
-	protected.DELETE("/todos/:id", todos.NewGinHandler(todoHandler.RemoveTask))
+	protected.POST("/todos", router.NewGinHandler(todoHandler.NewTask))
+	protected.GET("/todos", router.NewGinHandler(todoHandler.GetTasks))
+	protected.DELETE("/todos/:id", router.NewGinHandler(todoHandler.RemoveTask))
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()

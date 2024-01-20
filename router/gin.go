@@ -1,6 +1,9 @@
-package todos
+package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/SupTarr/todo/todos"
+	"github.com/gin-gonic/gin"
+)
 
 type MyContext struct {
 	*gin.Context
@@ -40,7 +43,7 @@ func (c MyContext) JSON(code int, i interface{}) {
 	c.Context.JSON(code, i)
 }
 
-func NewGinHandler(handler func(Context)) gin.HandlerFunc {
+func NewGinHandler(handler func(todos.Context)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		handler(&MyContext{Context: c})
 	}
