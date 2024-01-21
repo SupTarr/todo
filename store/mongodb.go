@@ -27,6 +27,7 @@ func (s *MongoDBStore) GetTodos(todo *[]todos.Todo) error {
 }
 
 func (s *MongoDBStore) DeleteTodo(todo *todos.Todo, id int) error {
-	_, err := s.Collection.DeleteOne(context.Background(), bson.D{"ID", id})
+	filter := bson.D{{Key: "ID", Value: id}}
+	_, err := s.Collection.DeleteOne(context.Background(), filter)
 	return err
 }
