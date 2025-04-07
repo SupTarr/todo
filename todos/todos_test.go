@@ -20,10 +20,10 @@ func (TestDB) DeleteTodo(t *Todo, id int) error {
 }
 
 type TestContext struct {
-	v map[string]interface{}
+	v map[string]any
 }
 
-func (TestContext) Bind(v interface{}) error {
+func (TestContext) Bind(v any) error {
 	*v.(*Todo) = Todo{
 		Title: "sleep",
 	}
@@ -31,8 +31,8 @@ func (TestContext) Bind(v interface{}) error {
 	return nil
 }
 
-func (c *TestContext) JSON(code int, v interface{}) {
-	c.v = v.(map[string]interface{})
+func (c *TestContext) JSON(code int, v any) {
+	c.v = v.(map[string]any)
 }
 
 func (TestContext) TransactionID() string {
