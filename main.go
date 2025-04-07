@@ -38,7 +38,7 @@ func main() {
 
 	err = godotenv.Load("local.env")
 	if err != nil {
-		log.Printf(">> Please consider environment variables: %s\n", err)
+		log.Printf("Please consider environment variables: %s\n", err)
 	}
 
 	dsn := os.Getenv("DB_CONN")
