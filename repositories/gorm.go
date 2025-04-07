@@ -1,4 +1,4 @@
-package store
+package repositories
 
 import (
 	"github.com/SupTarr/todo/todos"

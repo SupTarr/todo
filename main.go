@@ -17,8 +17,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/SupTarr/todo/auth"
+	"github.com/SupTarr/todo/repositories"
 	"github.com/SupTarr/todo/router"
-	"github.com/SupTarr/todo/store"
 	"github.com/SupTarr/todo/todos"
 )
 
@@ -61,7 +61,7 @@ func main() {
 	}
 	r.Use(cors.New(config))
 
-	gormStore := store.NewGormStore(db)
+	gormRepo := repositories.NewGormStore(db)
 
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
@@ -73,7 +73,7 @@ func main() {
 	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGN")))
 
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
-	todoHandler := todos.NewTodoHandler(gormStore)
+	todoHandler := todos.NewTodoHandler(gormRepo)
 	protected.POST("/todos", router.NewGinHandler(todoHandler.NewTask))
 	protected.GET("/todos", router.NewGinHandler(todoHandler.GetTasks))
 	protected.DELETE("/todos/:id", router.NewGinHandler(todoHandler.RemoveTask))
