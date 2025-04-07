@@ -44,6 +44,10 @@ func (c GinContext) JSON(code int, i any) {
 	c.Context.JSON(code, i)
 }
 
+func (c GinContext) AbortWithStatus(code int) {
+	c.Context.AbortWithStatus(code)
+}
+
 func NewGinHandler(handler func(my_context.Context)) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		handler(&GinContext{Context: c})

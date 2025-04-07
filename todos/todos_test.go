@@ -50,6 +50,10 @@ func (TestContext) TodoID() string {
 	return "1"
 }
 
+func (TestContext) AbortWithStatus(code int) {
+	return
+}
+
 func TestCreateTodoNotAllowSleepTask(t *testing.T) {
 	handler := NewTodoHandler(&TestDB{})
 	c := &TestContext{}

@@ -7,4 +7,5 @@ type Context interface {
 	Audience() string
 	Status(int)
 	JSON(int, any)
+	AbortWithStatus(int)
 }
