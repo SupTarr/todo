@@ -35,3 +35,7 @@ func (c FiberCtx) Status(code int) {
 func (c FiberCtx) JSON(code int, i any) {
 	c.Ctx.Status(code).JSON(i)
 }
+
+func (c FiberCtx) AbortWithStatus(code int) {
+	c.Ctx.SendStatus(code)
+}

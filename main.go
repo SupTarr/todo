@@ -17,6 +17,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/SupTarr/todo/auth"
+	"github.com/SupTarr/todo/my_context"
 	"github.com/SupTarr/todo/repositories"
 	"github.com/SupTarr/todo/router"
 	"github.com/SupTarr/todo/todos"
@@ -66,9 +67,9 @@ func main() {
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
 	})
-	r.GET("/pingz", PingPongHandler)
-	r.GET("/limitz", LimitedHandler)
-	r.GET("/x", XHandler)
+	r.GET("/pingz", router.NewGinHandler(PingPongHandler))
+	r.GET("/limitz", router.NewGinHandler(LimitedHandler))
+	r.GET("/x", router.NewGinHandler(XHandler))
 
 	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGN")))
 
@@ -108,15 +109,15 @@ func main() {
 	log.Println("Server exiting")
 }
 
-func PingPongHandler(c *gin.Context) {
+func PingPongHandler(c my_context.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-func XHandler(c *gin.Context) {
+func XHandler(c my_context.Context) {
 	c.JSON(http.StatusOK, gin.H{"buildcommit": buildcommit, "buildtime": buildtime})
 }
 
-func LimitedHandler(c *gin.Context) {
+func LimitedHandler(c my_context.Context) {
 	if !limiter.Allow() {
 		c.AbortWithStatus(http.StatusTooManyRequests)
 		return
