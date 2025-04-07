@@ -1,31 +1,32 @@
 package router
 
 import (
-	"github.com/SupTarr/todo/todos"
+	"github.com/SupTarr/todo/my_context"
+
 	"github.com/gin-gonic/gin"
 )
 
-type MyContext struct {
+type GinContext struct {
 	*gin.Context
 }
 
-func NewGinContext(c *gin.Context) *MyContext {
-	return &MyContext{Context: c}
+func NewGinContext(c *gin.Context) *GinContext {
+	return &GinContext{Context: c}
 }
 
-func (c MyContext) Bind(i interface{}) error {
+func (c GinContext) Bind(i any) error {
 	return c.ShouldBindJSON(i)
 }
 
-func (c MyContext) TodoID() string {
+func (c GinContext) TodoID() string {
 	return c.Param("id")
 }
 
-func (c MyContext) TransactionID() string {
+func (c GinContext) TransactionID() string {
 	return c.Request.Header.Get("TransactionID")
 }
 
-func (c MyContext) Audience() string {
+func (c GinContext) Audience() string {
 	if aud, ok := c.Get("aud"); ok {
 		if s, ok := aud.(string); ok {
 			return s
@@ -35,16 +36,16 @@ func (c MyContext) Audience() string {
 	return ""
 }
 
-func (c MyContext) Status(code int) {
+func (c GinContext) Status(code int) {
 	c.Context.Status(code)
 }
 
-func (c MyContext) JSON(code int, i interface{}) {
+func (c GinContext) JSON(code int, i any) {
 	c.Context.JSON(code, i)
 }
 
-func NewGinHandler(handler func(todos.Context)) gin.HandlerFunc {
+func NewGinHandler(handler func(my_context.Context)) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		handler(&MyContext{Context: c})
+		handler(&GinContext{Context: c})
 	}
 }
