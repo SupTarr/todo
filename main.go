@@ -30,47 +30,66 @@ var (
 
 var limiter = rate.NewLimiter(5, 5)
 
-func main() {
-	_, err := os.Create("/tmp/live")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer os.Remove("/tmp/live")
-
-	err = godotenv.Load("local.env")
+func initConfig() {
+	err := godotenv.Load("local.env")
 	if err != nil {
 		log.Printf("Please consider environment variables: %s\n", err)
 	}
 
-	dsn := os.Getenv("DB_CONN")
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic("Failed to connect database")
+	if os.Getenv("SIGN") == "" {
+		log.Fatal("SIGN environment variable is not set")
 	}
+}
 
-	db.AutoMigrate(&todos.Todo{})
-
+func initGin() *gin.Engine {
 	r := gin.Default()
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{
 		"http://localhost:8080",
 	}
+
 	config.AllowHeaders = []string{
 		"Origin",
 		"Authorization",
 		"TransactionID",
 	}
+
 	r.Use(cors.New(config))
+	return r
+}
 
+func initGorm(dns string) *gorm.DB {
+	db, err := gorm.Open(mysql.Open(dns), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Failed to connect database")
+	}
+
+	db.AutoMigrate(&todos.Todo{})
+	return db
+}
+
+func main() {
+	_, err := os.Create("/tmp/live")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove("/tmp/live")
+
+	initConfig()
+
+	dns := os.Getenv("DB_CONN")
+	db := initGorm(dns)
+
+	r := initGin()
 	gormRepo := repositories.NewGormStore(db)
-
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(200)
 	})
+
 	r.GET("/pingz", router.NewGinHandler(PingPongHandler))
 	r.GET("/limitz", router.NewGinHandler(LimitedHandler))
 	r.GET("/x", router.NewGinHandler(XHandler))
-
 	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGN")))
 
 	protected := r.Group("", auth.Protect([]byte(os.Getenv("SIGN"))))
@@ -95,14 +114,17 @@ func main() {
 		}
 	}()
 
+	gracefullyShutdown(ctx, srv)
+}
+
+func gracefullyShutdown(ctx context.Context, srv *http.Server) {
 	<-ctx.Done()
 
-	stop()
 	log.Println("Shutting down gracefully, press Ctrl+C again to force")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(timeoutCtx); err != nil {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 
