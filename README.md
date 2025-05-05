@@ -24,17 +24,17 @@ This is a simple Todo list API built with Go, Gin, GORM, and MariaDB. It demonst
 
 1. **Clone the repository:**
 
-```bash
-git clone <repository-url>
-cd todo
-```
+    ```bash
+    git clone <repository-url>
+    cd todo
+    ```
 
 2. **Create environment file:**
 Copy the example environment variables:
 
-```bash
-cp local.env.example local.env
-```
+    ```bash
+    cp local.env.example local.env
+    ```
 
 *Note: You might need to create `local.env.example` based on your `local.env` file.*
 Update `local.env` with your desired settings, especially the `SIGN` key for JWT.
@@ -53,30 +53,31 @@ docker-compose up --build
 
 The API will be available at `http://localhost:8081`.
 
-#### Option 2: Running Locally (Requires MariaDB running separately)
+#### Option 2: Running Locally (Requires MariaDB Running Separately)
 
 1. **Start MariaDB:**
-You can use the provided Makefile target to start a MariaDB container:
 
-```bash
-make maria
-```
+    You can use the provided Makefile target to start a MariaDB container:
 
-*Ensure port 3306 is free or modify the port mapping in the `Makefile`.*
+    ```bash
+    make maria
+    ```
 
-2. **Build the application:**
+    *Ensure port 3306 is free or modify the port mapping in the `Makefile`.*
 
-```bash
-make build
-```
+2. **Build the Application:**
 
-3. **Run the application:**
+    ```bash
+    make build
+    ```
 
-```bash
-make run
-```
+3. **Run the Application:**
 
-The API will be available at `http://localhost:8081`.
+    ```bash
+    make run
+    ```
+
+    The API will be available at `http://localhost:8081`.
 
 ## API Endpoints
 
