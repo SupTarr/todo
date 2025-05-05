@@ -56,8 +56,7 @@ The API will be available at `http://localhost:8081`.
 #### Option 2: Running Locally (Requires MariaDB Running Separately)
 
 1. **Start MariaDB:**
-
-    You can use the provided Makefile target to start a MariaDB container:
+You can use the provided Makefile target to start a MariaDB container:
 
     ```bash
     make maria
