@@ -45,7 +45,7 @@ Update `local.env` with your desired settings, especially the `SIGN` key for JWT
 
 This method starts both the API and the MariaDB database in containers.
 
-1.**Build and run the services:**
+1. **Build and run the services:**
 
 ```bash
 docker-compose up --build
